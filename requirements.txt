@@ -7,3 +7,4 @@ locust
 torchserve 
 torch-model-archiver
 pytest
+httpx
