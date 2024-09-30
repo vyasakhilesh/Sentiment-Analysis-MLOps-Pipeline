@@ -67,7 +67,7 @@ jobs:
       run: |
         # Apply database migrations or create tables if necessary
         # Example using SQLAlchemy to create tables
-        python -c "import os; from database import engine, Base; Base.metadata.create_all(bind=engine)"
+        python -c "import os; from .database import engine, Base; Base.metadata.create_all(bind=engine)"
 
     - name: Run Tests
       env:
