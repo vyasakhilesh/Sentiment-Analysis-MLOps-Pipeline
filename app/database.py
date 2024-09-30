@@ -7,8 +7,8 @@ import os
 
 # Database setup
 # DATABASE_URL = "postgresql://user:password@localhost/sentiment_db"
-os.environ.get('DATABASE_URL')
-engine = create_engine(DATABASE_URL)
+database_url = os.environ.get('DATABASE_URL')
+engine = create_engine(database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 # Create tables
