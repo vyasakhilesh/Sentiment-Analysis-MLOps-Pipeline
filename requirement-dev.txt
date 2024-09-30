@@ -1,0 +1,16 @@
+# requirements-dev.txt
+# This file will contain all the dependencies required for development and testing, including testing frameworks, linters, and other utilities.
+
+# Testing Frameworks
+pytest==7.2.0
+pytest-cov==4.0.0
+
+# Linting and Formatting
+flake8==6.0.0
+black==23.3.0
+
+# Mocking and Utilities
+pytest-mock==3.10.0
+
+# Additional Development Tools
+pre-commit==3.3.0

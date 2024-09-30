@@ -167,7 +167,7 @@ mkdir -p .github/workflows
 mkdir app model worker docker k8s scripts tests locust logs configs
 
 # Create necessary files
-touch .gitignore .dockerignore README.md LICENSE requirements.txt
+touch .gitignore .dockerignore README.md LICENSE requirements.txt requirements-dev.txt
 
 # Create files within .github/workflows
 touch .github/workflows/deploy.yml
