@@ -13,6 +13,7 @@
 # pre-commit: A framework for managing and maintaining multi-language pre-commit hooks.
 
 # Testing Dependencies
+httpx
 
 # Testing Frameworks
 pytest==7.2.0
