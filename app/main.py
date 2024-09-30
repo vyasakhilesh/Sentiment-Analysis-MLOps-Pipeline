@@ -2,16 +2,11 @@
 # app/main.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 import joblib
+from app.databases import SessionLocal
+from app.model import SentimentRecord
 
-# Database setup
-DATABASE_URL = "postgresql://user:password@localhost/sentiment_db"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+
 
 # Model definition
 class SentimentRequest(BaseModel):
@@ -21,21 +16,12 @@ class SentimentResponse(BaseModel):
     sentiment: str
     confidence: float
 
-class SentimentRecord(Base):
-    __tablename__ = "sentiment_records"
-    id = Column(Integer, primary_key=True, index=True)
-    text = Column(Text, nullable=False)
-    sentiment = Column(String, nullable=False)
-    confidence = Column(String, nullable=False)
-
 # Initialize the app
 app = FastAPI()
 
 # Load ML model
 model = joblib.load("model/sentiment_model.joblib")
 
-# Create tables
-Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def read_root():
