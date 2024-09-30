@@ -1,1 +1,1 @@
-# Sentiment Analysis MLOPs Pipeline
+# Sentiment Analysis MLOps Pipeline
