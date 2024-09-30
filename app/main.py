@@ -36,6 +36,11 @@ model = joblib.load("model/sentiment_model.joblib")
 # Create tables
 Base.metadata.create_all(bind=engine)
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello World"}
+    
+
 @app.post("/predict", response_model=SentimentResponse)
 def predict_sentiment(request: SentimentRequest):
     try:
