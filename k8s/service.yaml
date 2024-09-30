@@ -1,0 +1,37 @@
+# k8s/service.yaml
+# k8s/service.yaml: Defines Kubernetes services to expose the deployments.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentiment-backend-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8000
+  selector:
+    app: sentiment-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentiment-worker-service
+spec:
+  clusterIP: None
+  ports:
+    - port: 8080
+  selector:
+    app: sentiment-worker
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentiment-model-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: sentiment-model

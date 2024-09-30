@@ -1,4 +1,6 @@
 # k8s/hpa.yaml
+# k8s/hpa.yaml: Configures Horizontal Pod Autoscaler for the backend service.
+
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:

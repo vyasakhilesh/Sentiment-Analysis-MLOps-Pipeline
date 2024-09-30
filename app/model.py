@@ -1,0 +1,1 @@
+# Defines SQLAlchemy ORM models for the PostgreSQL database

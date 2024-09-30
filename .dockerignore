@@ -1,0 +1,9 @@
+# .dockerignore: Specifies files and directories to be ignored by Docker when building images.
+# .dockerignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.env
+

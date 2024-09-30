@@ -1,4 +1,5 @@
 # k8s/deployment.yaml
+# k8s/deployment.yaml: Defines Kubernetes deployments for the backend, worker, and model services.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,18 +21,61 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URL
-          value: "postgresql://user:password@rds-endpoint/sentiment_db"
-        - name: MODEL_PATH
-          value: "s3://sentiment-model-artifacts/model"
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DATABASE_URL
+        - name: SQS_QUEUE_URL
+          valueFrom:
+            secretKeyRef:
+              name: sqs-secrets
+              key: SQS_QUEUE_URL
 ---
-apiVersion: v1
-kind: Service
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: sentiment-backend-service
+  name: sentiment-worker-deployment
 spec:
-  type: LoadBalancer
-  ports:
-    - port: 80
-      targetPort: 8000
+  replicas: 2
   selector:
-    app: sentiment-backend
+    matchLabels:
+      app: sentiment-worker
+  template:
+    metadata:
+      labels:
+        app: sentiment-worker
+    spec:
+      containers:
+      - name: sentiment-worker
+        image: <aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-worker:latest
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: DATABASE_URL
+        - name: SQS_QUEUE_URL
+          valueFrom:
+            secretKeyRef:
+              name: sqs-secrets
+              key: SQS_QUEUE_URL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentiment-model-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentiment-model
+  template:
+    metadata:
+      labels:
+        app: sentiment-model
+    spec:
+      containers:
+      - name: sentiment-model
+        image: <aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-model:latest
+        ports:
+        - containerPort: 8080

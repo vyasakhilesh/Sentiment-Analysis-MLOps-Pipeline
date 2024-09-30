@@ -1,4 +1,5 @@
 # test_main.py
+# tests/test_main.py: Contains unit tests for the FastAPI backend.
 from fastapi.testclient import TestClient
 from app.main import app
 

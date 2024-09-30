@@ -1,0 +1,1 @@
+# Custom handler for TorchServe to serve the transformer model.

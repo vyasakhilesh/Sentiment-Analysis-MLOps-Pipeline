@@ -1,0 +1,6 @@
+# Lists Python dependencies specific to the backend application.
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+joblib

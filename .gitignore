@@ -1,1 +1,11 @@
-app/__pycache__
+# .gitignore: Specifies files and directories to be ignored by Git.
+# .gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.DS_Store
+/logs/
+/model/sentiment_model.joblib
+/model/*.mar

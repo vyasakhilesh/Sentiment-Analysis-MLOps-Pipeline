@@ -1,0 +1,21 @@
+# k8s/ingress.yaml
+# k8s/ingress.yaml: (Optional) Defines Ingress resources for routing external traffic.
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sentiment-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: sentiment.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sentiment-backend-service
+            port:
+              number: 80

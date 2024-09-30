@@ -1,0 +1,1 @@
+Defines the CI/CD pipeline using GitHub Actions. It automates tasks like testing, building Docker images, pushing to ECR, and deploying to Kubernetes.

@@ -1,3 +1,4 @@
+#  Script for training and fine-tuning the transformer model using Hugging Face Transformers and PyTorch
 # train.py
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 from datasets import load_dataset
