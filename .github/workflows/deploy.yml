@@ -1,0 +1,51 @@
+# .github/workflows/deploy.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Tests
+      run: |
+        pytest
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build Docker Image
+      run: |
+        docker build -t sentiment-backend .
+        docker tag sentiment-backend:latest <aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-backend:latest
+
+    - name: Push to ECR
+      run: |
+        docker push <aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-backend:latest
+
+    - name: Update Kubernetes Deployment
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.K8S_HOST }}
+        username: ${{ secrets.K8S_USER }}
+        key: ${{ secrets.K8S_SSH_KEY }}
+        script: |
+          kubectl set image deployment/sentiment-backend-deployment sentiment-backend=<aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-backend:latest

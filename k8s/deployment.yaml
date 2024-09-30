@@ -1,0 +1,37 @@
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentiment-backend-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sentiment-backend
+  template:
+    metadata:
+      labels:
+        app: sentiment-backend
+    spec:
+      containers:
+      - name: sentiment-backend
+        image: <aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://user:password@rds-endpoint/sentiment_db"
+        - name: MODEL_PATH
+          value: "s3://sentiment-model-artifacts/model"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentiment-backend-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8000
+  selector:
+    app: sentiment-backend
