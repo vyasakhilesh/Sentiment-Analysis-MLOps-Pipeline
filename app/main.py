@@ -3,8 +3,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
-from database import SessionLocal
-from model import SentimentRecord
+from app.database import SessionLocal
+from app.model import SentimentRecord
 
 
 # Model definition
