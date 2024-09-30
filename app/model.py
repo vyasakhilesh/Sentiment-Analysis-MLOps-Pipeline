@@ -1,6 +1,6 @@
 # Defines SQLAlchemy ORM models for the PostgreSQL database
 from sqlalchemy import Column, Integer, String, Text
-from .database import Base
+from .databases import Base
 
 class SentimentRecord(Base):
     __tablename__ = "sentiment_records"
