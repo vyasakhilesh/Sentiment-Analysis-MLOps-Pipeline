@@ -1,9 +1,0 @@
-# docker/Dockerfile.model
-#docker/Dockerfile.model: Dockerfile for containerizing the model serving (TorchServe).
-
-FROM pytorch/torchserve:latest
-
-COPY model/sentiment_model.mar /home/model-server/model-store/
-COPY model/transformers_handler.py /home/model-server/
-
-CMD ["torchserve", "--start", "--model-store", "/home/model-server/model-store", "--models", "sentiment_model=sentiment_model.mar", "--ts-config", "/home/model-server/config.properties"]
