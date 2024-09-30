@@ -5,50 +5,112 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_sentiment_db
+        options: >-
+          --health-cmd="pg_isready -U test_user -d test_sentiment_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_sentiment_db
+      SQS_QUEUE_URL: https://sqs.us-west-2.amazonaws.com/<account_id>/sentiment-queue
+      AWS_REGION: us-west-2
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY_BACKEND: sentiment-backend
+      ECR_REPOSITORY_WORKER: sentiment-worker
+      ECR_REPOSITORY_MODEL: sentiment-model
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Install Production Dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install Development and Test Dependencies
+      run: |
         pip install -r requirements-dev.txt
-        pip install -r requirements.txt 
-# only production requirements (requirements.txt) and testing requiremnts (requirements-dev.txt)
-        
+
+    - name: Wait for PostgreSQL to be Ready
+      run: |
+        for i in {1..30}; do
+          pg_isready -h localhost -p 5432 -U test_user -d test_sentiment_db && break
+          echo "Waiting for PostgreSQL..."
+          sleep 1
+        done
+
+    - name: Initialize Database
+      run: |
+        # Apply database migrations or create tables if necessary
+        # Example using SQLAlchemy to create tables
+        python -c "
+import os
+from app.database import engine, Base
+Base.metadata.create_all(bind=engine)
+        "
 
     - name: Run Tests
+      env:
+        DATABASE_URL: ${{ env.DATABASE_URL }}
+        SQS_QUEUE_URL: ${{ env.SQS_QUEUE_URL }}
       run: |
-        pytest
+        pytest --cov=app tests/
 
     - name: Log in to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+      with:
+        region: ${{ env.AWS_REGION }}
 
-    - name: Build Docker Image
+    - name: Build and Push Backend Docker Image
       run: |
-        docker build -t sentiment-backend .
-        docker tag sentiment-backend:latest <aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-backend:latest
+        docker build -f docker/Dockerfile.backend -t ${{ env.ECR_REPOSITORY_BACKEND }} ./app
+        docker tag ${{ env.ECR_REPOSITORY_BACKEND }}:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_BACKEND }}:latest
+        docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_BACKEND }}:latest
 
-    - name: Push to ECR
+    - name: Build and Push Worker Docker Image
       run: |
-        docker push <aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-backend:latest
+        docker build -f docker/Dockerfile.worker -t ${{ env.ECR_REPOSITORY_WORKER }} ./worker
+        docker tag ${{ env.ECR_REPOSITORY_WORKER }}:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_WORKER }}:latest
+        docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_WORKER }}:latest
 
-    - name: Update Kubernetes Deployment
+    - name: Build and Push Model Docker Image
+      run: |
+        docker build -f docker/Dockerfile.model -t ${{ env.ECR_REPOSITORY_MODEL }} ./model
+        docker tag ${{ env.ECR_REPOSITORY_MODEL }}:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_MODEL }}:latest
+        docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_MODEL }}:latest
+
+    - name: Deploy to Kubernetes
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.K8S_HOST }}
         username: ${{ secrets.K8S_USER }}
         key: ${{ secrets.K8S_SSH_KEY }}
         script: |
-          kubectl set image deployment/sentiment-backend-deployment sentiment-backend=<aws_account_id>.dkr.ecr.us-west-2.amazonaws.com/sentiment-backend:latest
+          kubectl set image deployment/sentiment-backend-deployment sentiment-backend=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_BACKEND }}:latest
+          kubectl set image deployment/sentiment-worker-deployment sentiment-worker=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_WORKER }}:latest
+          kubectl set image deployment/sentiment-model-deployment sentiment-model=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_MODEL }}:latest
