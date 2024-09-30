@@ -1,4 +1,8 @@
 # requirements.txt
+# If you prefer not to maintain multiple requirements files, you can include test dependencies in the existing requirements.txt. However, this approach is less flexible and may lead to a bloated production environment.
+
+# Pros: Simpler file structure with fewer requirements files, Easier to manage in smaller projects.
+# Cons: Production environment may include unnecessary packages., Harder to distinguish between production and development dependencies.
 
 # Production Dependencies
 fastapi==0.95.1
@@ -8,10 +12,3 @@ psycopg2-binary==2.9.6
 joblib==1.3.2
 boto3==1.26.158
 
-# Development and Test Dependencies
-pytest==7.2.0
-pytest-cov==4.0.0
-flake8==6.0.0
-black==23.3.0
-pytest-mock==3.10.0
-pre-commit==3.3.0

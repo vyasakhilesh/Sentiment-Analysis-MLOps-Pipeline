@@ -1,6 +1,11 @@
 # .gitignore: Specifies files and directories to be ignored by Git.
 # .gitignore
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*$py.class
+
 *.pyc
 *.pyo
 *.pyd
@@ -9,3 +14,43 @@ __pycache__/
 /logs/
 /model/sentiment_model.joblib
 /model/*.mar
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Pytest cache
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+coverage.xml
+
+# MyPy
+.mypy_cache/
+
+# Local configuration files
+.env
+.env.*

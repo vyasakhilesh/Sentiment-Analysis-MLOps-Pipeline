@@ -1,5 +1,18 @@
 # requirements-dev.txt
-# This file will contain all the dependencies required for development and testing, including testing frameworks, linters, and other utilities.
+# This file will contain all the dependencies required for testing, including testing frameworks, linters, and other utilities.
+# To effectively manage test dependencies in your Real-Time Sentiment Analysis Service project, 
+# it is recommended to create a separate requirements-dev.txt file at the root level of your project. 
+# This practice aligns with industry standards, promoting a clean separation between production and development environments, enhancing maintainability, and ensuring security
+
+# Explanation of Dependencies:
+# pytest: A robust testing framework for Python.
+# pytest-cov: Plugin for measuring code coverage with pytest.
+# flake8: A tool for enforcing coding style (PEP 8).
+# black: An uncompromising code formatter.
+# pytest-mock: A thin wrapper around the mock library for easier mocking in tests.
+# pre-commit: A framework for managing and maintaining multi-language pre-commit hooks.
+
+# Testing Dependencies
 
 # Testing Frameworks
 pytest==7.2.0
